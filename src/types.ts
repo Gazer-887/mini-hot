@@ -6,6 +6,10 @@ export type PlatformKey =
   | 'douyin'
   | 'xiaohongshu'
   | 'toutiao'
+  | 'juejin'
+  | 'v2ex'
+  | 'csdn'
+  | 'hackernews'
 
 // 平台元信息（由 data/platforms.ts 提供）
 export interface PlatformMeta {
@@ -15,6 +19,7 @@ export interface PlatformMeta {
   color: string         // 主题色（hex）
   unit: string          // 热值单位后缀，如「万」「播放」（用于差异化显示）
   showHeat: boolean     // 是否显示热值（toutiao 为空则显示 --）
+  source?: 'uapis' | 'hackernews' // 数据源；默认 uapis
 }
 
 // 单条热榜（归一化后）
@@ -56,4 +61,14 @@ export interface QuotaInfo {
   remaining?: string
   stopOnEmpty?: string
   debit?: string
+}
+
+// HackerNews（Algolia 前端接口）原始返回
+export interface HackerNewsResp {
+  hits: Array<{
+    title: string
+    url?: string
+    points?: number
+    objectID: string
+  }>
 }

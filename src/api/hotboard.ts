@@ -1,7 +1,9 @@
-import type { HotboardRaw, HotItem, PlatformKey, QuotaInfo } from '../types'
+import type { HotboardRaw, HackerNewsResp, HotItem, PlatformKey, QuotaInfo } from '../types'
 import { formatHeat } from '../utils/formatHeat'
+import { PLATFORM_MAP } from '../data/platforms'
 
 const API_BASE = 'https://uapis.cn/api/v1/misc/hotboard'
+const HN_API = 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=50'
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 分钟缓存，防烧配额
 const CACHE_PREFIX = 'minihot:'
 const MAX_ITEMS = 50
@@ -127,6 +129,35 @@ async function doFetch(key: PlatformKey, attempt: number): Promise<CacheEntry> {
   return { items, updatedAt, fetchedAt: Date.now() }
 }
 
+/** HackerNews：Algolia 前端接口（CORS 开放），points 即热度 */
+async function fetchHackerNews(): Promise<CacheEntry> {
+  const res = await fetch(HN_API, { headers: { Accept: 'application/json' } })
+  if (!res.ok) {
+    throw new Error(`加载失败 (${res.status})`)
+  }
+  let data: HackerNewsResp
+  try {
+    data = (await res.json()) as HackerNewsResp
+  } catch {
+    throw new Error('数据解析失败')
+  }
+  const hits = data?.hits
+  if (!Array.isArray(hits) || hits.length === 0) {
+    throw new Error('暂无数据')
+  }
+  const items: HotItem[] = hits.slice(0, MAX_ITEMS).map((h, i) => {
+    const points = typeof h.points === 'number' ? h.points : 0
+    return {
+      rank: i + 1,
+      title: h.title || '',
+      url: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+      heatRaw: String(points),
+      heat: points > 0 ? String(points) : '--',
+    }
+  })
+  return { items, updatedAt: new Date().toISOString(), fetchedAt: Date.now() }
+}
+
 /**
  * fetchHot(key, force): 拉取单个平台热榜，带缓存与错误识别。
  * - force=true 绕过缓存（手动刷新强制请求）
@@ -145,7 +176,8 @@ export async function fetchHot(
     }
   }
 
-  const entry = await doFetch(key, 0)
+  const source = PLATFORM_MAP[key]?.source ?? 'uapis'
+  const entry = source === 'hackernews' ? await fetchHackerNews() : await doFetch(key, 0)
   setCache(key, entry.items, entry.updatedAt)
   return { items: entry.items, updatedAt: entry.updatedAt }
 }

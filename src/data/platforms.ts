@@ -8,6 +8,11 @@ export const PLATFORMS: PlatformMeta[] = [
   { key: 'douyin', name: '抖音', listName: '热点榜', color: '#fe2c55', unit: '万', showHeat: true },
   { key: 'xiaohongshu', name: '小红书', listName: '热搜榜', color: '#ff2442', unit: '万', showHeat: true },
   { key: 'toutiao', name: '今日头条', listName: '热榜', color: '#fe2c55', unit: '', showHeat: false },
+  // 开发者社区
+  { key: 'juejin', name: '掘金', listName: '热榜', color: '#1e80ff', unit: '', showHeat: true },
+  { key: 'v2ex', name: 'V2EX', listName: '热帖', color: '#4a90d9', unit: '', showHeat: false },
+  { key: 'csdn', name: 'CSDN', listName: '热榜', color: '#fc5531', unit: '', showHeat: true },
+  { key: 'hackernews', name: 'HackerNews', listName: '热榜', color: '#ff6600', unit: '分', showHeat: true, source: 'hackernews' },
 ]
 
 // 便捷映射

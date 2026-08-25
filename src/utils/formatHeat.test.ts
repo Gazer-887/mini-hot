@@ -26,6 +26,10 @@ describe('formatHeat 热值归一化', () => {
     expect(formatHeat('')).toBe('--')
   })
 
+  it('掘金：数字+前缀"热度:"', () => {
+    expect(formatHeat('热度:1809')).toBe('1,809')
+  })
+
   it('直接带"万"单位', () => {
     expect(formatHeat('25.3万')).toBe('25.3万')
   })
