@@ -39,6 +39,33 @@
 - dist/index.html (0.51 KB)
 
 ### 下一步
-- [ ] 配额感知降级（读取 RateLimit 头，不足时提示）
-- [ ] 单测增加错误隔离场景
-- [ ] 部署到 Vercel/Netlify（生产 CORS 验证）
+- [ ] 部署到 Vercel/Netlify（生产 CORS 需重新验证）→ 等主人确认账号/授权
+- [ ] git commit + push（含全部改动）→ 等主人确认
+
+---
+
+## 2026-08-25 待办完成（P0-P2 全量推进）
+
+### 完成的待办
+- ✅ P0 缓存增强：fetchHot 增 force 参数，手动刷新绕过缓存（原实现 force 仍命中缓存导致刷新失效）
+- ✅ P0 配额感知：parseQuota 读 RateLimit/Uapi-* 头，Header 有限流提示
+- ✅ P0 错误隔离：429/网络错误指数退避重试（1s/2s，MAX_RETRY=2）
+- ✅ P0 单测：新增 src/api/hotboard.test.ts（5 用例：缓存命中/强制刷新/429退避/超限/非OK）
+- ✅ P1 深色模式：CSS 变量 + darkMode:class + 主题切换按钮（记住偏好）
+- ✅ P1 书签收藏：useFavorites + 收藏按钮 + 收藏视图（'fav' tab）
+- ✅ P1 移动端：tab 横向滚动 + 增大触摸热区
+- ✅ P2 ESLint：flat config（eslint 9/10）+ lint script（0 error）
+- ✅ P2 CI：.github/workflows/ci.yml（npm ci→tsc→lint→test→build）
+- ✅ P2 PWA：manifest + service worker（缓存 app shell，不缓存 API）
+- ✅ 全量回归：tsc 0 + lint 0 + test 20/20 + build 通过
+- 附：补 src/vite-env.d.ts 修复 import.meta.env 类型
+
+### 踩坑（详见 learnings.md）
+- Vite watcher 与 edit 临时目录冲突 EBUSY → 改文件前停 dev
+- import.meta.env 缺类型 → 补 vite-env.d.ts
+- ESLint 10 react-hooks/set-state-in-effect 误报数据拉取 → 针对性 disable
+- vitest mock fetch 复用 Response body → mockImplementation 动态返回
+
+### 下一步
+- [ ] 部署到 Vercel/Netlify（生产 CORS 需重新验证）→ 等主人确认账号/授权
+- [ ] git commit + push（含全部改动）→ 等主人确认

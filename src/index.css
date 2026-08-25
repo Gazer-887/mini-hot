@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 主题色变量：亮色默认（:root），深色由 .dark 覆盖（rgb 空格分隔，供 <alpha-value> 使用） */
+:root {
+  --cream: 251 246 236;
+  --sand: 241 232 216;
+  --gold: 226 177 85;
+  --wood: 176 125 59;
+  --ink: 62 47 28;
+  --softgreen: 143 212 94;
+}
+
+.dark {
+  --cream: 28 24 18;
+  --sand: 42 35 27;
+  --gold: 232 183 94;
+  --wood: 184 133 70;
+  --ink: 240 232 218;
+  --softgreen: 143 212 94;
+}
+
 html,
 body {
   @apply bg-cream text-ink font-sans antialiased;

@@ -48,3 +48,12 @@ export interface HotboardRaw {
     extra?: Record<string, unknown>
   }>
 }
+
+// 配额/限流状态（api 层解析响应头，用于配额感知降级提示）
+export interface QuotaInfo {
+  status: 'ok' | 'limited' | 'unknown'
+  rateLimit?: string
+  remaining?: string
+  stopOnEmpty?: string
+  debit?: string
+}

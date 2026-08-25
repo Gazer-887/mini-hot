@@ -4,8 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fbf6ec" />
+    <meta name="theme-color" content="#fbf6ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1812" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="manifest.webmanifest" />
     <title>迷你今日热榜</title>
+    <script>
+      // 避免首屏主题闪白（FOUC）：加载前同步设置 dark class
+      try {
+        var t = localStorage.getItem('minihot:theme')
+        if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

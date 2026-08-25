@@ -1,9 +1,12 @@
-import type { HotboardRaw, HotItem, PlatformKey } from '../types'
+import type { HotboardRaw, HotItem, PlatformKey, QuotaInfo } from '../types'
 import { formatHeat } from '../utils/formatHeat'
 
 const API_BASE = 'https://uapis.cn/api/v1/misc/hotboard'
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 分钟缓存，防烧配额
 const CACHE_PREFIX = 'minihot:'
+const MAX_ITEMS = 50
+const MAX_RETRY = 2
+const RETRY_DELAY_MS = [1000, 2000]
 
 // 缓存结构
 interface CacheEntry {
@@ -12,8 +15,33 @@ interface CacheEntry {
   fetchedAt: number
 }
 
-// 每次 fetch 默认最多展示条数（bilibili 100 条会超，统一 cap 50）
-const MAX_ITEMS = 50
+// 配额/限流全局状态（由最近一次请求的响应头刷新；用于 UI 顶部提示）
+let quotaInfo: QuotaInfo = { status: 'unknown' }
+
+export function getQuotaInfo(): QuotaInfo {
+  return quotaInfo
+}
+
+function parseQuota(res: Response): void {
+  try {
+    quotaInfo = {
+      status: res.status === 429 ? 'limited' : 'ok',
+      rateLimit: res.headers.get('ratelimit') ?? undefined,
+      remaining:
+        res.headers.get('ratelimit-remaining') ??
+        res.headers.get('uapi-credits-remaining') ??
+        undefined,
+      stopOnEmpty: res.headers.get('uapi-stop-on-empty') ?? undefined,
+      debit: res.headers.get('uapi-debit-status') ?? undefined,
+    }
+  } catch {
+    quotaInfo = { status: 'ok' }
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
 
 /** 读取缓存（未过期则命中） */
 function getCache(key: PlatformKey): CacheEntry | null {
@@ -50,32 +78,36 @@ function normalizeItem(raw: NonNullable<HotboardRaw['list'][number]>, rank: numb
   }
 }
 
-/**
- * fetchHot(key): 拉取单个平台热榜，带缓存与错误识别。
- * - 命中未过期缓存 → 直接返回缓存数据
- * - 接口 429（限流）/ 非 OK → 抛错误（含 message），由 hook 转成三态
- * - 返回 { items, updatedAt }
- */
-export async function fetchHot(key: PlatformKey): Promise<{ items: HotItem[]; updatedAt: string }> {
-  // 1) 缓存优先，防烧配额
-  const cached = getCache(key)
-  if (cached) {
-    return { items: cached.items, updatedAt: cached.updatedAt }
+/** 单次请求 + 指数退避（429 / 网络错误），获取归一化后的 CacheEntry */
+async function doFetch(key: PlatformKey, attempt: number): Promise<CacheEntry> {
+  const url = `${API_BASE}?type=${key}`
+
+  let res: Response
+  try {
+    res = await fetch(url, { headers: { Accept: 'application/json' } })
+  } catch {
+    // 网络异常（断网/超时/DNS）：退避重试
+    if (attempt < MAX_RETRY) {
+      await sleep(RETRY_DELAY_MS[attempt])
+      return doFetch(key, attempt + 1)
+    }
+    throw new Error('网络异常，请检查网络后重试')
   }
 
-  // 2) 发起请求
-  const url = `${API_BASE}?type=${key}`
-  const res = await fetch(url, { headers: { Accept: 'application/json' } })
+  parseQuota(res)
 
-  // 3) 错误识别：429 限流、其他非 OK
   if (res.status === 429) {
+    // 限流：退避重试，超限抛错（由 hook 转成错误态）
+    if (attempt < MAX_RETRY) {
+      await sleep(RETRY_DELAY_MS[attempt])
+      return doFetch(key, attempt + 1)
+    }
     throw new Error('访问太频繁，请稍后再试')
   }
   if (!res.ok) {
     throw new Error(`加载失败 (${res.status})`)
   }
 
-  // 4) 解析 + 校验
   let data: HotboardRaw
   try {
     data = (await res.json()) as HotboardRaw
@@ -87,17 +119,38 @@ export async function fetchHot(key: PlatformKey): Promise<{ items: HotItem[]; up
     throw new Error('暂无数据')
   }
 
-  // 5) 归一化 + cap
   const items: HotItem[] = list
     .slice(0, MAX_ITEMS)
     .map((it, i) => normalizeItem(it, it.index ?? i + 1))
 
   const updatedAt = data.update_time || new Date().toISOString()
-  setCache(key, items, updatedAt)
-  return { items, updatedAt }
+  return { items, updatedAt, fetchedAt: Date.now() }
 }
 
-/** 平台 base path：用于默认拉取全部时合并（可选） */
+/**
+ * fetchHot(key, force): 拉取单个平台热榜，带缓存与错误识别。
+ * - force=true 绕过缓存（手动刷新强制请求）
+ * - 命中未过期缓存（force=false）→ 直接返回缓存数据
+ * - 429 / 网络错误 → 指数退避重试
+ * - 返回 { items, updatedAt }
+ */
+export async function fetchHot(
+  key: PlatformKey,
+  force = false,
+): Promise<{ items: HotItem[]; updatedAt: string }> {
+  if (!force) {
+    const cached = getCache(key)
+    if (cached) {
+      return { items: cached.items, updatedAt: cached.updatedAt }
+    }
+  }
+
+  const entry = await doFetch(key, 0)
+  setCache(key, entry.items, entry.updatedAt)
+  return { items: entry.items, updatedAt: entry.updatedAt }
+}
+
+/** 平台 base path：仅工具用途 */
 export function getApiUrl(key: PlatformKey): string {
   return `${API_BASE}?type=${key}`
 }
