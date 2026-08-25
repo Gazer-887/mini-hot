@@ -68,4 +68,26 @@
 
 ### 下一步
 - [ ] 部署到 Vercel/Netlify（生产 CORS 需重新验证）→ 等主人确认账号/授权
-- [ ] git commit + push（含全部改动）→ 等主人确认
+- [x] git commit + push（已完成 760b82d）
+
+---
+
+## 2026-08-25 里程碑 & 三态规划（新方向，方案待确认）
+
+- ✅ P0-P2 待办全部完成并提交推送（commit `760b82d`，工作区干净），作为后续三态版本的**共享基座**
+- 目标：同一热榜做成 **Windows 桌面 / 安卓 App / DSH 插件** 三种形态
+- 待定：架构方向（倾向「单库+多壳」而非「三分支」）、各壳技术选型（Electron/Tauri/Capacitor）、DSH 插件机制（需调研）
+
+---
+
+## 2026-08-25 新增开发者社区板块
+
+- ✅ 新增 4 个板块：**掘金(juejin) / V2EX / CSDN / HackerNews**（uapis 现成 3 个 + HackerNews 走 Algolia）
+- ✅ 数据源抽象：`PlatformMeta.source`（'uapis'|'hackernews'），`fetchHot` 按 source 分派 uapis/Algolia
+- ✅ 各平台热值处理：掘金"热度:"前缀→千分位、V2EX 热值为空(showHeat=false)、CSDN "4.3w"→4.3万、HN 用 points
+- ✅ 探测结论：uapis 支持 juejin/v2ex/csdn；HN 用 Algolia(CORS 开放)；GitHub trending 页 CORS 不开放、api.github.com 开放但限速 10/min（暂未加，避免破坏纯前端直连架构，见决定 D-012）
+- ✅ 全量回归：tsc 0 / lint 0 / test 22/22 / build 通过
+
+### 下一步
+- [ ] git 提交本次板块扩展（等主人确认）
+- [ ] 三态版本推进（DSH 侧边栏卡片 → Electron → Capacitor）

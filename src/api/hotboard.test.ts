@@ -104,3 +104,26 @@ describe('fetchHot 错误隔离与退避', () => {
     await expect(fetchHot('weibo', true)).rejects.toThrow('加载失败 (500)')
   })
 })
+
+describe('fetchHot HackerNews(Algolia) 分派', () => {
+  it('points 归一化 + 无 url 回退 item?id=', async () => {
+    mockStorage()
+    globalThis.fetch = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            hits: [
+              { title: 'A', url: 'http://a', points: 1562, objectID: '1' },
+              { title: 'B', url: '', points: 0, objectID: '2' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      ),
+    )
+    const res = await fetchHot('hackernews', true)
+    expect(res.items[0].heat).toBe('1562')
+    expect(res.items[1].heat).toBe('--')
+    expect(res.items[1].url).toBe('https://news.ycombinator.com/item?id=2')
+  })
+})
