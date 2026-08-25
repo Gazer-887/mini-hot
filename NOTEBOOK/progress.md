@@ -89,5 +89,15 @@
 - ✅ 全量回归：tsc 0 / lint 0 / test 22/22 / build 通过
 
 ### 下一步
-- [ ] git 提交本次板块扩展（等主人确认）
-- [ ] 三态版本推进（DSH 侧边栏卡片 → Electron → Capacitor）
+- [x] git 提交本次板块扩展（已完成 b8cce18）
+- [ ] 三态版本推进（Electron → Capacitor）
+
+---
+
+## 2026-08-25 DSH 集成方案（热榜页 + agent 可读可操作）
+
+- 需求：DSH 加**快捷按钮**（位置：自动化按钮邻右）打开热榜页；agent 能**自动读取 + 操作**热榜页（像 DSH 自动化插件，非用户发图/链接）
+- 方案：Netlify 部署热榜在线 URL → `/hotboard` 技能（agent 用 DSH browser 打开 URL 读取/操作）+ DSH 客户端插件（快捷按钮，参考 dsh-community-market）
+- 状态：**方案已定，待落地**（Netlify 首次使用需主人注册/授权；技能/按钮待做）
+- 明日待办：① Netlify 部署（得在线 URL）② /hotboard 技能 ③ DSH 快捷按钮插件
+- 详细见 `PLAN/plan4_DSH集成方案.md`；netlify-cli 已装好（113 包）
