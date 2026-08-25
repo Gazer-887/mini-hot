@@ -1,12 +1,17 @@
+import { getQuotaInfo } from '../api/hotboard'
+
 interface Props {
   updatedAt: string
   refreshing: boolean
   onRefresh: () => void
+  theme: 'light' | 'dark'
+  onToggleTheme: () => void
 }
 
 // 顶部标题 + 更新时间 + 刷新按钮
-export default function Header({ updatedAt, refreshing, onRefresh }: Props) {
-  const timeText = updatedAt ? `更新于 ${formatTime(updatedAt)}` : '正在加载…'
+export default function Header({ updatedAt, refreshing, onRefresh, theme, onToggleTheme }: Props) {
+  const timeText = updatedAt ? `更新于 ${formatTime(updatedAt)}` : ''
+  const quota = getQuotaInfo()
   return (
     <header className="mb-6">
       <div className="flex items-center justify-between">
@@ -14,16 +19,31 @@ export default function Header({ updatedAt, refreshing, onRefresh }: Props) {
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">迷你今日热榜</h1>
           <p className="mt-1 text-sm text-ink/50">聚合微博 · 知乎 · B站 · 抖音 · 小红书 · 头条</p>
         </div>
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="rounded-full bg-gold/90 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gold disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {refreshing ? '刷新中…' : '刷新'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+            className="rounded-full border border-ink/10 bg-white/70 px-3 py-2 text-sm text-ink/70 transition hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-ink/80 dark:hover:bg-white/10"
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="rounded-full bg-gold/90 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gold disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {refreshing ? '刷新中…' : '刷新'}
+          </button>
+        </div>
       </div>
-      <p className="mt-2 text-xs text-ink/40">{timeText}</p>
+      {timeText && <p className="mt-2 text-xs text-ink/40">{timeText}</p>}
+      {quota.status === 'limited' && (
+        <p className="mt-2 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400">
+          ⚠️ 接口访问受限（配额/限流），已过缓存，稍后刷新再看
+        </p>
+      )}
     </header>
   )
 }

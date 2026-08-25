@@ -1,0 +1,18 @@
+{
+  "name": "迷你今日热榜",
+  "short_name": "Mini热榜",
+  "description": "聚合微博·知乎·B站·抖音·小红书·今日头条热榜",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf6ec",
+  "theme_color": "#e2b155",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
