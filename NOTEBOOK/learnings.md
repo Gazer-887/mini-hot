@@ -1,5 +1,9 @@
 # 经验沉淀
 
+- L-011 — Vite `server.watch.ignored` 用 glob 会漏掉点开头临时目录 — 工具 — 编辑工具原子写产生的临时目录形如 `.progress.md.xxx.tmpdir\`（点开头），`'**/*.tmpdir/**'` 这类 glob 经 micromatch 时 `*` 默认 `dot:false` 不匹配点开头段 → 仍触发 EBUSY 崩溃 — 修复：`ignored` 改成**函数** `(path)=>path.includes('.tmpdir')`，函数匹配最可靠 — 教训:Vite watch.ignored 要忽略点开头的动态临时目录，用函数而非 glob
+
+- L-010 — dsh-better-sidebar 侧边栏 Tab 接入 — 工具 — 通过 `ctx.betterSidebar.registerTab(descriptor)` 注册侧边栏 Tab；插件 `inject=['betterSidebar']`；better-sidebar 在 client 端用 `ctx.provide('betterSidebar', service)` 发布服务（src/client/index.tsx `createBetterSidebarService` + `ctx.provide`）；Tab 组件收 `TabComponentProps`（`{ctx,store,scope,tab,visible}`）返回 ReactNode；`descriptor.component` 用 `(props)=><YourView {...props}/>`；`single:true` 单例。复刻样例：`src/client/builtins/tabs.tsx` 的 builtinTabs — 教训：写 better-sidebar 扩展先读其 src/client/builtins + service.ts 类型定义
+
 - L-009 — DSH 客户端插件必须在 package.json 声明 `dsh.client` 字段 — 工具 — 之前只写了 `lib/client.js` + `id: hotboard` 的 patch，但 package.json 缺 `"dsh.client": { "platform": "web" }` 和 `exports["./client"]`，导致 DSH 启动时不收集该 client bundle，侧边栏按钮不出现 — 修复：package.json 加 `dsh.client` + `./client` export；client.js 用 `factory: (require) => {...}` 引入 react/react-jsx-runtime/@deepseek-ai/dsh-client-ui-primitives，`const inject = ['slots','locale']`，`exports.apply/inject` — 教训：写 DSH UI 插件先对照 community-market 的已知正确结构，别想当然
 
 - L-008 — DSH 受管安装恢复事务（startup-unconfirmed 阻塞） — 运维 — `dsh plugin add` 装插件后重启 DSH，弹 `manual-plugin-install@unresolved requires a recovery choice after startup-unconfirmed` — 根因：受管安装记录 phase 停在非终态 `recovery-pending`（验证环节 `startup-unconfirmed` 未确认），`claimLocked` 只认终态放行 — 解决方案：确认安装实际成功（package.json 哈希 = 记录 after + node_modules 有包）后，备份 `state.json` 并把 phase 改为 `verified`、删 failureReason、补 verifiedAt — 教训：装插件后要正常退出 DSH 让验证跑完；若弹窗已出现可直接点"确认恢复"，避免每次手动改 state.json（hotboard 安装后已处置一次，voice-input 后同类事件第二次）

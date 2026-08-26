@@ -1,7 +1,7 @@
 {
   "name": "dsh-hotboard",
-  "version": "0.1.1",
-  "description": "DSH 桌面端热榜快捷按钮——侧边栏底部「🔥热榜」按钮，点击打开 Mini_hot 热榜网页",
+  "version": "0.2.0",
+  "description": "DSH 热榜侧边栏 Tab——通过 better-sidebar 的 ctx.betterSidebar.registerTab 注册「🔥 热榜」页，Tab 内 iframe 嵌入 Mini_hot 热榜",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -28,14 +28,14 @@
   },
   "peerDependencies": {
     "cordis": "^4.0.0-rc.7",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.1.0-rc.7",
+    "dsh-better-sidebar": "0.12.3",
     "react": "18.3.1"
   },
   "peerDependenciesMeta": {
     "cordis": {
       "optional": true
     },
-    "@deepseek-ai/dsh-client-ui-primitives": {
+    "dsh-better-sidebar": {
       "optional": true
     },
     "react": {

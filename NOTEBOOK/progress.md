@@ -132,6 +132,18 @@
   - `client.js` 重写为正确结构：`factory: (require)=>{...}` 引入 react / react-jsx-runtime / @deepseek-ai/dsh-client-ui-primitives；`const inject=['slots','locale']`；`exports.apply/inject`
 - **需再次重启 DSH**，按钮才会出现。click 后 window.open 打开 `localhost:5173`（dev server 需保持运行）。
 
+### 2026-08-26 深更：改为 better-sidebar Tab（主人发现 dsh-better-sidebar 支持 Tab 扩展）
+- **方向变更**：主人发现 dsh-better-sidebar 提供 `ctx.betterSidebar` 服务，侧边栏页面（Tab）可由插件扩展 → 热榜从"底部按钮"升级为"侧边栏 Tab"。
+- **关键调研**：
+  - `ctx.betterSidebar.registerTab(descriptor)` 注册 Tab；`inject=['betterSidebar']`。
+  - better-sidebar 在 client 端用 `ctx.provide('betterSidebar', service)` 发布服务（src/client/index.tsx L68），消费方 inject 即可拿到。
+  - Tab 组件接收 `TabComponentProps`：`{ ctx, store, scope, tab, visible }`，返回 ReactNode。
+  - 复刻 builtinTabs（src/client/builtins/tabs.tsx）作为正确样例。
+- **实现**：`client.js` 重写为 `inject=['betterSidebar']` + `ctx.betterSidebar.registerTab({id:'hotboard', title:'🔥 热榜', single:true, component})`，Tab 内 iframe 嵌热榜页。
+- **可复用性**：desktop profile 已挂载 dsh-better-sidebar（dump-config 可见），无需额外安装。
+- **状态**：插件已重新安装（v0.2.0），client bundle 已更新。**需硬刷新浏览器**（client 改动热加载，无需重启 DSH）。
+- **顺手修复**：vite.config.ts 的 watch.ignored 扩充 `dsh-plugin/**` + `**/*.tmpdir/**`，避免编辑插件文档触发 EBUSY 崩溃（L-001 重复踩坑）。
+
 ### 文件清单
 | 文件 | 说明 |
 |------|------|
