@@ -118,6 +118,12 @@
   - 部署后更新：① `dsh-plugin/lib/client.js` 中 HOTBOARD_URL ② `SKILL.md` 中地址
 - [ ] **DSH 重启**：安装插件后需重启 DSH Desktop 使按钮生效
 
+### 2026-08-26 晚间：DSH 重启被「受保护安装恢复」阻塞（已解决）
+- **现象**：安装 `dsh-hotboard` 后重启 DSH，弹窗 `Protected plugin installation manual-plugin-install@unresolved requires a recovery choice after startup-unconfirmed`，无法正常进入。
+- **根因**：`dsh plugin add file:D:/Mini_hot/dsh-plugin`（17:03）创建了恢复事务 `c35f05c9`，安装本身成功（package.json 哈希 = 记录 after、node_modules 有 dsh-hotboard v0.1.0），但重启时验证环节标记 `startup-unconfirmed` → phase 停在 `recovery-pending`（非终态）→ 阻塞启动。
+- **处置**：备份 `state.json` 后，将 phase 推进到终态 `verified`、删除 failureReason、补 verifiedAt → 重启恢复正常。
+- **注意**：这是第二次同类事件（上次是 voice-input 安装）。插件用 `dsh plugin add` 安装后若**异常退出/强杀 DSH**，验证环节无法跑完，重启必弹恢复窗。正确做法：装完正常退出 DSH，或在弹窗中直接点"确认恢复"。
+
 ### 文件清单
 | 文件 | 说明 |
 |------|------|

@@ -1,41 +1,26 @@
-/**
- * dsh-hotboard —— 客户端侧：热榜快捷按钮。
- *
- * 通过 window.__ModuleLoader__.load 注册到 DSH 浏览器上下文，
- * 注入到 sidebar.footer.action slot（社区市场同款位置），
- * 排在 order=20，紧邻自动化按钮。
- *
- * 点击后调用 window.open() 打开热榜网页。
- * 支持环境变量 HOTBOARD_URL 覆盖默认地址。
- */
+// dsh-hotboard client —— 在 DSH 桌面端侧边栏底部（sidebar.footer.action）注册「🔥 热榜」按钮。
+// 点击后 window.open 打开 Mini_hot 热榜网页。
+// 结构复刻自 dsh-community-market（能正常注入 UI 的已知样例）。
 
-// 热榜 URL：开发阶段用 localhost，生产部署后改为 Netlify 地址
+// 热榜地址：开发用 localhost，Netlify 部署后改为在线 URL
+// 注意：Netlify 部署后改这里 + ~/.dsh/skills/hotboard/SKILL.md 的地址
 const HOTBOARD_URL = 'http://localhost:5173'
 
 window.__ModuleLoader__.load({
   id: 'dsh-hotboard',
-  factory: () => {
+  factory: (require) => {
     var module = { exports: {} }
     var exports = module.exports
 
-    // 懒加载宿主提供的 React 和 primitives
-    function getReact() {
-      return window.__ModuleLoader__?.get?.('react') || window.react
-    }
-    function getPrimitives() {
-      return (
-        window.__ModuleLoader__?.get?.('primitives') ||
-        window.__dshPrimitives ||
-        {}
-      )
-    }
+    // 宿主提供的 React 与 UI 原语（slot 组件必须用它们渲染）
+    const react = require('react')
+    const reactJsxRuntime = require('react/jsx-runtime')
+    const primitives = require('@deepseek-ai/dsh-client-ui-primitives')
 
-    function HotboardBtn({ wide, t }) {
-      const react = getReact()
-      const { jsx, jsx as Fragment, useEffect, useState } = react || {}
-      const primitives = getPrimitives()
-      const { Tooltip, Button, IconGlobeOutline14 } = primitives || {}
+    const { Tooltip, Button, IconGlobeOutline14 } = primitives
 
+    /** 热榜启动器按钮：宽侧边栏显示文字+图标，收起时只显图标 */
+    function HotboardLauncher({ wide, t }) {
       const handleClick = () => {
         const win = window.open(HOTBOARD_URL, '_blank', 'noopener,noreferrer')
         if (!win) {
@@ -43,50 +28,31 @@ window.__ModuleLoader__.load({
         }
       }
 
-      // 无 primitives 时的 fallback：用原生 div
-      if (!jsx) {
-        const el = document.createElement('button')
-        el.setAttribute('aria-label', t ? t('tab') : '🔥 热榜')
-        el.setAttribute('title', t ? t('tooltip') : '打开今日热榜')
-        el.textContent = '🔥'
-        el.style.cssText =
-          'background:transparent;border:none;cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;color:inherit;'
-        el.addEventListener('click', handleClick)
-        return el
-      }
-
-      // 正常路径：使用宿主 primitives
-      return jsx(
-        Tooltip,
-        {
-          label: t ? t('tooltip') : '打开今日热榜',
-          delayMs: 400,
-          disabled: !!wide,
-          children: jsx(Button, {
-            variant: 'ghost',
-            'aria-label': t ? t('tab') : '🔥 热榜',
-            icon: jsx(IconGlobeOutline14, { size: wide ? 16 : 18 }),
-            onClick: handleClick,
-            children: wide ? (t ? t('tab') : '🔥 热榜') : null,
-          }),
-        },
-        'hotboard-btn',
-      )
+      return reactJsxRuntime.jsx(Tooltip, {
+        label: t('tooltip'),
+        delayMs: 400,
+        disabled: !!wide,
+        children: reactJsxRuntime.jsx(Button, {
+          variant: 'ghost',
+          'aria-label': t('tab'),
+          icon: reactJsxRuntime.jsx(IconGlobeOutline14, { size: wide ? 16 : 18 }),
+          onClick: handleClick,
+          children: wide ? t('tab') : null,
+        }),
+      })
     }
 
     const inject = ['slots', 'locale']
+    const NS = 'hotboard'
 
     function apply(ctx) {
-      const NS = 'hotboard'
-
-      // 注册 locale 字典
+      // 注册中英文本地化
       ctx.effect(
         () =>
           ctx.locale.register(NS, {
             zh: {
               tab: '🔥 热榜',
-              tooltip:
-                '打开今日热榜（微博·知乎·B站·抖音·小红书·头条等10大平台）',
+              tooltip: '打开今日热榜（微博·知乎·B站·抖音·小红书·头条等10大平台）',
             },
             en: {
               tab: '🔥 Hot',
@@ -96,8 +62,7 @@ window.__ModuleLoader__.load({
         'hotboard: locale',
       )
 
-      // 注入到 sidebar.footer.action slot
-      // order=20 排在社区市场（order=10）之后，紧邻自动化按钮
+      // 注入 sidebar.footer.action slot（社区市场 order=10，本插件 order=20 排在其后）
       ctx.effect(
         () =>
           ctx.slots.inject('sidebar.footer.action', () =>
@@ -109,7 +74,7 @@ window.__ModuleLoader__.load({
                 label: () => ctx.locale.bind(NS)('tab'),
                 locale: NS,
               },
-              HotboardBtn,
+              HotboardLauncher,
             ),
           ),
         'hotboard: sidebar button',
