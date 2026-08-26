@@ -1,0 +1,7 @@
+# dsh-hotboard 插件补丁
+#
+# 安装命令：
+#   dsh plugin --profile desktop add file:D:/Mini_hot/dsh-plugin
+- insert:
+    - id: hotboard
+      name: 'dsh-hotboard'

@@ -1,0 +1,7 @@
+---
+name: dsh-hotboard
+version: 0.1.0
+description: DSH 桌面端热榜快捷按钮——在侧边栏底部注册「🔥热榜」按钮，点击后打开 Mini_hot 热榜网页。
+id: dsh-hotboard
+main: ./lib/index.js
+---
