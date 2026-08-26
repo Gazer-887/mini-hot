@@ -94,10 +94,39 @@
 
 ---
 
-## 2026-08-25 DSH 集成方案（热榜页 + agent 可读可操作）
+## 2026-08-26 DSH 集成推进（技能 + 插件已完成，待 Netlify 部署）
 
-- 需求：DSH 加**快捷按钮**（位置：自动化按钮邻右）打开热榜页；agent 能**自动读取 + 操作**热榜页（像 DSH 自动化插件，非用户发图/链接）
-- 方案：Netlify 部署热榜在线 URL → `/hotboard` 技能（agent 用 DSH browser 打开 URL 读取/操作）+ DSH 客户端插件（快捷按钮，参考 dsh-community-market）
-- 状态：**方案已定，待落地**（Netlify 首次使用需主人注册/授权；技能/按钮待做）
-- 明日待办：① Netlify 部署（得在线 URL）② /hotboard 技能 ③ DSH 快捷按钮插件
-- 详细见 `PLAN/plan4_DSH集成方案.md`；netlify-cli 已装好（113 包）
+### 已完成
+- ✅ `/hotboard` 技能创建：`~/.dsh/skills/hotboard/SKILL.md`
+  - 指导 agent 用 DSH browser 工具打开热榜页、读取、按指令操作
+  - 覆盖场景：展示热榜、切平台、刷新、切换主题、收藏
+  - 热榜地址：本地 `http://localhost:5173`（Netlify 部署后改为在线 URL）
+- ✅ DSH 快捷按钮插件创建：`D:\Mini_hot\dsh-plugin/`
+  - 注入到 `sidebar.footer.action` slot（社区市场同款位置，order=20）
+  - 点击打开热榜网页（window.open）
+  - 已安装：`dsh plugin --profile desktop add file:D:/Mini_hot/dsh-plugin` ✅
+  - 验证：dump-config 中可见 `name: dsh-hotboard` ✅
+- ✅ 本地 dev server 验证：
+  - Vite dev server 启动成功（localhost:5173）✅
+  - 10 平台数据全部加载正常 ✅
+  - 切平台（微博→掘金→V2EX）验证通过 ✅
+  - 刷新按钮验证通过 ✅
+
+### 待完成（需主人操作）
+- [ ] **Netlify 部署**：主人首次使用，需先注册/登录 → 部署 `dist/` → 得到在线 URL
+  - 命令：`cd D:\Mini_hot && netlify deploy --prod --dir=dist`
+  - 部署后更新：① `dsh-plugin/lib/client.js` 中 HOTBOARD_URL ② `SKILL.md` 中地址
+- [ ] **DSH 重启**：安装插件后需重启 DSH Desktop 使按钮生效
+
+### 文件清单
+| 文件 | 说明 |
+|------|------|
+| `~/.dsh/skills/hotboard/SKILL.md` | `/hotboard` 技能（agent 读/操作热榜页） |
+| `D:\Mini_hot\dsh-plugin\lib\index.js` | 插件服务端入口 |
+| `D:\Mini_hot\dsh-plugin\lib\client.js` | 插件客户端 UI（按钮组件） |
+| `D:\Mini_hot\dsh-plugin\cordis.patch.yml` | DSH 注入配置 |
+| `D:\Mini_hot\dsh-plugin\package.json` | 包描述 |
+
+---
+
+> 最后更新：2026-08-26 17:12
