@@ -11,12 +11,13 @@ export default defineConfig({
       // 忽略编辑工具原子写产生的临时目录（.xxx.tmpdir/），避免 Vite watcher 报 EBUSY 崩溃。
       // 用函数而非 glob：glob 的 `*` 默认不匹配以 `.` 开头的目录段（micromatch dot:false），
       // 而 `.progress.md.xxx.tmpdir` 正是点开头目录，函数匹配最可靠。
+      // 注意：config 被 tsc 检查，lib 较低，用正则（.test）而非 es2015 的 .includes。
       ignored: (path: string) =>
-        path.includes('.tmpdir') ||
-        path.includes('\\NOTEBOOK\\') ||
-        path.includes('\\PLAN\\') ||
-        path.includes('\\docs\\') ||
-        path.includes('\\dsh-plugin\\'),
+        /\.tmpdir/.test(path) ||
+        /[\\/]NOTEBOOK[\\/]/.test(path) ||
+        /[\\/]PLAN[\\/]/.test(path) ||
+        /[\\/]docs[\\/]/.test(path) ||
+        /[\\/]dsh-plugin[\\/]/.test(path),
     },
   },
   test: {

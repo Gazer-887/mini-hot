@@ -142,7 +142,7 @@
 - **实现**：`client.js` 重写为 `inject=['betterSidebar']` + `ctx.betterSidebar.registerTab({id:'hotboard', title:'🔥 热榜', single:true, component})`，Tab 内 iframe 嵌热榜页。
 - **可复用性**：desktop profile 已挂载 dsh-better-sidebar（dump-config 可见），无需额外安装。
 - **状态**：插件已重新安装（v0.2.0），client bundle 已更新。**需硬刷新浏览器**（client 改动热加载，无需重启 DSH）。
-- **顺手修复**：vite.config.ts 的 watch.ignored 扩充 `dsh-plugin/**` + `**/*.tmpdir/**`，避免编辑插件文档触发 EBUSY 崩溃（L-001 重复踩坑）。
+- **顺手修复**：vite.config.ts 的 watch.ignored 改为正则函数 `/(\.tmpdir|[\\/]NOTEBOOK[\\/]|[\\/]PLAN[\\/]|[\\/]docs[\\/]|[\\/]dsh-plugin[\\/])/.test(path)`；已实测：创建/删除 `.tmpdir` 临时目录后 dev server 仍存活（EBUSY 根治，L-011 验证通过）。注意不能用 glob（micromatch dot:false 匹配不到点开头段），且 config 被 tsc 检查不能用 es2015 的 `.includes`。
 
 ### 文件清单
 | 文件 | 说明 |

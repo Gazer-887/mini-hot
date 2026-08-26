@@ -1,6 +1,6 @@
 # 经验沉淀
 
-- L-011 — Vite `server.watch.ignored` 用 glob 会漏掉点开头临时目录 — 工具 — 编辑工具原子写产生的临时目录形如 `.progress.md.xxx.tmpdir\`（点开头），`'**/*.tmpdir/**'` 这类 glob 经 micromatch 时 `*` 默认 `dot:false` 不匹配点开头段 → 仍触发 EBUSY 崩溃 — 修复：`ignored` 改成**函数** `(path)=>path.includes('.tmpdir')`，函数匹配最可靠 — 教训:Vite watch.ignored 要忽略点开头的动态临时目录，用函数而非 glob
+- L-011 — Vite `server.watch.ignored` 用 glob 会漏掉点开头临时目录 — 工具 — 编辑工具原子写产生的临时目录形如 `.progress.md.xxx.tmpdir\`（点开头），`'**/*.tmpdir/**'` 这类 glob 经 micromatch 时 `*` 默认 `dot:false` 不匹配点开头段 → 仍触发 EBUSY 崩溃 — 修复：`ignored` 改成**函数** `(path)=>/(\.tmpdir|...)/.test(path)`，函数/正则匹配最可靠；且 config 被 `tsc -b` 检查，lib 较低不能用 es2015 的 `.includes`，用 `.test()` — 已实测：创建/删除 `.tmpdir` 临时目录后 dev server 仍存活 — 教训:Vite watch.ignored 要忽略点开头的动态临时目录，用正则函数而非 glob
 
 - L-010 — dsh-better-sidebar 侧边栏 Tab 接入 — 工具 — 通过 `ctx.betterSidebar.registerTab(descriptor)` 注册侧边栏 Tab；插件 `inject=['betterSidebar']`；better-sidebar 在 client 端用 `ctx.provide('betterSidebar', service)` 发布服务（src/client/index.tsx `createBetterSidebarService` + `ctx.provide`）；Tab 组件收 `TabComponentProps`（`{ctx,store,scope,tab,visible}`）返回 ReactNode；`descriptor.component` 用 `(props)=><YourView {...props}/>`；`single:true` 单例。复刻样例：`src/client/builtins/tabs.tsx` 的 builtinTabs — 教训：写 better-sidebar 扩展先读其 src/client/builtins + service.ts 类型定义
 
