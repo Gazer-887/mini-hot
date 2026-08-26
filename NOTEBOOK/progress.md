@@ -124,6 +124,14 @@
 - **处置**：备份 `state.json` 后，将 phase 推进到终态 `verified`、删除 failureReason、补 verifiedAt → 重启恢复正常。
 - **注意**：这是第二次同类事件（上次是 voice-input 安装）。插件用 `dsh plugin add` 安装后若**异常退出/强杀 DSH**，验证环节无法跑完，重启必弹恢复窗。正确做法：装完正常退出 DSH，或在弹窗中直接点"确认恢复"。
 
+### 2026-08-26 晚：按钮未显示 → 根因 client 缺 dsh.client 字段（已修复）
+- **现象**：DSH 重启后侧边栏**没有**「🔥 热榜」按钮。
+- **根因**：`package.json` 缺 `"dsh.client": { "platform": "web" }` 字段和 `exports["./client"]`，DSH 启动时不收集该插件客户端 bundle → `lib/client.js` 从未执行。
+- **修复**：
+  - `package.json` 补 `dsh.client` + `./client` export（复刻 community-market）
+  - `client.js` 重写为正确结构：`factory: (require)=>{...}` 引入 react / react-jsx-runtime / @deepseek-ai/dsh-client-ui-primitives；`const inject=['slots','locale']`；`exports.apply/inject`
+- **需再次重启 DSH**，按钮才会出现。click 后 window.open 打开 `localhost:5173`（dev server 需保持运行）。
+
 ### 文件清单
 | 文件 | 说明 |
 |------|------|
