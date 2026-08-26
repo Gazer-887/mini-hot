@@ -8,8 +8,15 @@ export default defineConfig({
   server: {
     port: 5173,
     watch: {
-      // 忽略文档/进度文件（编辑工具原子写产生的临时目录会让 Vite watcher 报 EBUSY 崩溃）
-      ignored: ['**/NOTEBOOK/**', '**/PLAN/**', '**/docs/**', '**/.tmpdir/**'],
+      // 忽略编辑工具原子写产生的临时目录（.xxx.tmpdir/），避免 Vite watcher 报 EBUSY 崩溃。
+      // 用函数而非 glob：glob 的 `*` 默认不匹配以 `.` 开头的目录段（micromatch dot:false），
+      // 而 `.progress.md.xxx.tmpdir` 正是点开头目录，函数匹配最可靠。
+      ignored: (path: string) =>
+        path.includes('.tmpdir') ||
+        path.includes('\\NOTEBOOK\\') ||
+        path.includes('\\PLAN\\') ||
+        path.includes('\\docs\\') ||
+        path.includes('\\dsh-plugin\\'),
     },
   },
   test: {
