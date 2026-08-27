@@ -23,3 +23,12 @@ Thumbs.db
 # 编辑器
 .vscode/
 .idea/
+
+# Capacitor 安卓原生工程（源码应提交，以下为本地构建产物/密钥）
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/*.keystore
+android/app/release/
+android/captures/

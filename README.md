@@ -44,7 +44,7 @@
 |------|----|------|
 | 🌐 Web（本仓库） | Vite 静态站点 | ✅ |
 | 🪟 Windows | Electron | 📋 计划 |
-| 🤖 Android | Capacitor | 📋 计划 |
+| 🤖 Android | Capacitor | ✅ 2026-08-27 完成（debug 3.8MB + release 3.0MB 已签名，模拟器端到端验证通过） |
 | 🔌 DSH 集成 | 独立页面 + agent 浏览器读取 | 📋 计划 |
 
 > 架构共识：**单一代码库 + 多薄壳**，避免三分支三拷贝导致代码漂移/合并地狱。
