@@ -174,4 +174,70 @@
 
 ---
 
-> 最后更新：2026-08-27 17:51
+## 2026-08-27 安卓壳（Capacitor 6）完成 — 端到端验证通过
+
+### 背景
+- 主人指示"先做安卓软件吧，DSH 我还在用" → 推进三态的阶段 2 Capacitor 壳，DSH/部署相关一律不动。
+- 环境侦察：Node 22 / Java 17（JDK-17，JAVA_HOME=D:\Tools\JDK-17） / ANDROID_HOME=D:\Tools\Android\Sdk（platforms: android-34, build-tools 34.0.0, licenses 已接受, 无 cmdline-tools）。SDK 仅有 API 34 → 选 **Capacitor 6.2**（compileSdk 34 完美匹配），不强制上 7。
+
+### 落地
+- ✅ 装依赖：`@capacitor/core@^6` + `@capacitor/android@^6`（运行时） + `@capacitor/cli@^6`（devDep）→ 实际 6.2.1。
+- ✅ `capacitor.config.ts`：`appId=com.minihot.app`, `appName=迷你热榜`, `webDir=dist`, `androidScheme=https`。
+- ✅ `.gitignore` 补 android 原生构建产物（`.gradle/`, `app/build/`, `build/`, `local.properties`, `*.keystore`, `release/`, `captures/`）—— 源码仍提交。
+- ✅ `npx cap add android` 生成 android/ 原生工程（gradle wrapper 8.2.1, compileSdk 34, minSdk 22, targetSdk 34），自动 sync dist 到 assets。
+- ✅ `npm run build`（tsc 0 + vite 2.99s）→ `npx cap sync android` 复制 web 资源到原生 assets。
+
+### 踩坑：Gradle 分发下载超时 + cap build 走 release
+- 症状：`npx cap build android` 失败，下载 `gradle-8.2.1-all.zip` 连 `services.gradle.org` 超时 10s。
+- 根因：Java 进程不读 Clash Verge 系统代理（Clash 实际监听 **7897/7898/7899**，非默认 7890，TUN 未被 JVM 自动接管）；但国内 Gradle 镜像（腾讯云/华为云/阿里）直连 206 可达。
+- 处置 1：改 `android/gradle/wrapper/gradle-wrapper.properties` 的 `distributionUrl` → 腾讯云镜像（`mirrors.cloud.tencent.com/gradle/gradle-8.2.1-all.zip`），`networkTimeout` 10000→60000。
+- 处置 2：再次 `cap build android` 仍失败——`cap build` 默认走 **release 并强制要 keystore 签名**；改用 `./gradlew assembleDebug` 直接出 debug APK，无需签名，49s BUILD SUCCESSFUL。
+- 教训：① Java 进程需显式代理或换镜像源；② `cap build` ≠ debug，debug 用 `gradlew assembleDebug`；③ Gradle 编译首次会下分发+依赖约 3 分钟，之后秒级。
+
+### 验证
+- 静态（aapt2 dump badging）：`package=com.minihot.app`, `versionName=1.0`, minSdk 22, targetSdk 34, compileSdk 34, permission=INTERNET, `launchable-activity=com.minihot.app.MainActivity label=迷你热榜`。
+- 动态（AVD `Medium_Phone_API_36` / API 36 x86_64）：30s 开机 → `adb install` Success → `am start` MainActivity 无 crash（logcat 无 FATAL）→ **screencap 截图确认 UI 完整渲染**：标题"迷你今日热榜"/6 大平台 Tab（全部/收藏/微博/知乎/B站/抖音）/微博 13+ 条热榜数据/热值归一化（256.2万、893.5万 等）/刷新/主题/收藏按钮齐全。WebView + uapis 接口全链路通。
+- 产物：`D:\Mini_hot\android\app\build\outputs\apk\debug\app-debug.apk` **3.81 MB**。
+
+### 待办 / 风险
+- [ ] release 签名：上线前需生成 keystore + 配 `signingConfigs` + `cap build android`（位置已留 `android/app/build.gradle`）。
+- [ ] 发布：暂未上架（无应用市场账号），目前仅 debug APK。
+- [ ] 兼容性：API 36 模拟器验证通过，真机机型覆盖待主人测。
+- [ ] dev server 忽略：vite.config.ts 的 watch.ignored 建议补 `android/` 与 `.vite/`（防 dev 期间另终端构建安卓时 EBUSY）—— 本次未改（范围外），留作后续。
+
+### 澄清
+- `2026-08-26 深夜` 段落提及"项目根已有 android/ + capacitor.config.ts + vite.config 扩展忽略"—— 在当前仓库实际**未体现**（我接手时两者皆不存在，是本次新建）。可能属另一情境/被回滚/或为计划叙述。**以本次 2026-08-27 为当前真实落地状态。**
+
+---
+
+## 2026-08-27 安卓壳追加：release 签名配置完成（DSH / 真机覆盖仍挂起）
+
+### 背景
+- 主人确认：除 DSH 部署与真机覆盖外，其余待办先做 → 本次推进 release 签名、上架状态澄清、dev server 忽略确认、git 提交。
+- 沿用阶段 2 已生成的 Capacitor 6.2.1 原生工程（compileSdk 34）。
+
+### 落地
+- ✅ 生成 keystore：`android/app/release-key.keystore`（RSA 2048，alias=`minihot`，V3，有效期 10000 天≈至 2054-01-12，SHA256 指纹 `07:C7:E3:4A:67:33:E3:63:…:B5:F5:74:81`）。
+- ✅ 凭据隔离：`android/local.properties`（已被 android/.gitignore 忽略，不入库）写 `RELEASE_STORE_FILE/PASSWORD/KEY_ALIAS/KEY_PASSWORD`；`android/.gitignore` 原把 `*.keystore` 注释掉，已改为**生效忽略**（私钥不入库）。
+- ✅ `android/app/build.gradle`：`buildTypes.release` 前加 `signingConfigs.release`（从 local.properties 读取），release 引用之；local.properties 缺失时自动跳过签名（不破坏 debug/CI）。
+- ✅ 构建：`./gradlew assembleRelease` BUILD SUCCESSFUL（约 1min），产物 `android/app/build/outputs/apk/release/app-release.apk` **3.04 MB**（出现 `:app:validateSigningRelease` 任务，签名生效）。
+- ✅ 签名核验：`keytool -printcert -jarfile` → 所有者 `CN=MiniHot`，V3，SHA256withRSA，签名者 #1 即 minihot；aapt2 确认 `package=com.minihot.app`、INTERNET 权限不变。
+
+### 上架现状澄清（重要）
+- ⚠️ **当前无应用市场账号，无法上架 Google Play / 国内商店**；release 包仅用于**侧载（adb install / 直接传 APK）**或未来上架。
+- 📌 侧载方式：手机「设置-安全」允许「未知来源」后，把 `app-release.apk` 传入安装即可；release 包可正常覆盖升级（同 keystore 签名）。
+- 🔑 keystore 唯一性：更换 keystore 后旧用户无法覆盖安装，**请单独备份 `android/app/release-key.keystore` 并记住密码**（当前密码见 `android/local.properties`，该文件不入库）。
+
+### 顺带确认（无需改动）
+- ✅ dev server 忽略：`vite.config.ts` 的 `server.watch.ignored` 正则**已含 `/[\\/]android[\\/]/` 与 `/[\\/]\.vite[\\/]/`**（见 2026-08-26 深更段），防 EBUSY 已具备，本次未重复改动。
+
+### 待办 / 风险（最新状态）
+- [x] release 签名：✅ 已完成（见上）。
+- [x] dev server 忽略：✅ 已具备（vite.config.ts 已含 android/ 与 .vite/）。
+- [ ] 发布：无应用市场账号 → 只能侧载；release 包已具备侧载条件。
+- [ ] 兼容性：仍仅 API 36 模拟器验证，真机机型覆盖待主人测（主人暂缓）。
+- [ ] DSH 部署：主人仍在使用 DSH，暂停（Netlify 部署 / HOTBOARD_URL 切换待主人想动时）。
+
+---
+
+> 最后更新：2026-08-27 18:25

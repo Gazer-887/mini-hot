@@ -16,7 +16,7 @@
 热榜保持独立 Web 应用（已就绪，10 平台），通过 **Netlify** 部署为在线 URL。DSH 侧做两件事：
 
 1. **`/hotboard` 技能**：agent 收到命令后，用 DSH 自带的 **browser 工具**打开热榜 URL → 读取渲染后页面内容（各平台标题/热度）→ 结构化展示；用户说"切到掘金/刷新/看微博"，agent 用 browser **点击操作**页面
-2. **DSH 客户端插件**：注册一个**快捷按钮（sidebar.footer.action slot，order=20）**，点击打开热榜
+2. **DSH 客户端插件**：注册一个 **better-sidebar 侧边栏 Tab（`ctx.betterSidebar.registerTab`，order=60，single:true）**，Tab 内 iframe 嵌入热榜
 
 ---
 
@@ -25,10 +25,10 @@
 | 任务 | 状态 | 详情 |
 |------|------|------|
 | `/hotboard` 技能 | ✅ 完成 | `~/.dsh/skills/hotboard/SKILL.md` |
-| DSH 快捷按钮插件 | ✅ 完成+已安装 | `D:\Mini_hot\dsh-plugin/`，已注入 dump-config |
+| DSH 热榜 Tab 插件 | ✅ 完成+已安装 | `D:\Mini_hot\dsh-plugin/`（better-sidebar Tab，v0.2.0），已注入 dump-config |
 | 本地验证 | ✅ 完成 | dev server + browser 工具全场景通过 |
 | Netlify 部署 | ⏳ 待主人操作 | 需登录 → `netlify deploy --prod --dir=dist` |
-| DSH 重启 | ⏳ 待主人操作 | 重启后侧边栏出现「🔥 热榜」按钮 |
+| DSH 重启 | ⏳ 待主人操作 | 重启后侧边栏出现「🔥 热榜」Tab（硬刷新浏览器即可热加载，无需重启 DSH）|
 
 ---
 
@@ -54,7 +54,7 @@ netlify deploy --prod --dir=dist --site=<your-site-name>
 ## 五、风险/依赖
 
 - Netlify 部署需主人账号授权（token 为敏感凭证，用后撤销、不写入 git/代码）
-- 插件注入 `sidebar.footer.action` slot（已验证存在，order=20 排在社区市场之后）
+- 热榜已演进为 **better-sidebar 侧边栏 Tab**：client.js 用 `ctx.betterSidebar.registerTab` 注册（order=60，single:true），Tab 内 iframe 嵌入热榜；依赖 `dsh-better-sidebar` 0.12.3（桌面 profile 已默认启用）
 - agent 读热榜页依赖 DSH browser 工具；页面为 JS 渲染，需等 fetch 完成才能读到（browser snapshot 可见）
 
 ---

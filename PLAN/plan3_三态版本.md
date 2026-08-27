@@ -37,7 +37,7 @@ Mini_hot/
 
 - **阶段 0**：DSH 插件机制调研（当前进行中）→ 确认热榜适合做成「面板 / 页面 / 技能 / 命令」哪种形态
 - **阶段 1**：Electron 壳（最快出 Windows 成果，撞脸最小）
-- **阶段 2**：Capacitor 壳（Android）
+- **阶段 2**：Capacitor 壳（Android）✅ 2026-08-27 完成
 - **阶段 3**：DSH 插件壳（依调研结果）
 - **阶段 4**：三态共享核心的适配与分别发布
 
@@ -55,5 +55,7 @@ Mini_hot/
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-08-25 | 初稿 | 主人提出三态版本，确认单库+多壳、Electron、DSH 先调研 |
+| 2026-08-27 | 阶段 2 Capacitor 壳完成 | 装 @capacitor/[core\|android\|cli]@6.2.1；`cap add android`；Gradle 分发改腾讯云镜像绕墙；`./gradlew assembleDebug` 产出 `app-debug.apk` 3.81MB；AVD `Medium_Phone_API_36` 端到端验证（WebView 渲染+uapis 数据加载+三态 UI 全通）|
+| 2026-08-27 | 阶段 2 追加 release 签名 | 生成 keystore（alias=minihot，V3，有效期至 2054）+ `local.properties`（gitignore）存凭据 + `build.gradle` 加 `signingConfigs.release`；`./gradlew assembleRelease` 出 `app-release.apk` 3.04MB，keytool 验证签名生效 |
 
-> 最后更新：2026-08-25
+> 最后更新：2026-08-27
