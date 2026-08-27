@@ -32,9 +32,19 @@ dsh plugin --profile desktop add file:D:/Mini_hot/dsh-plugin
 编辑 `lib/client.js` 第 10 行的 `HOTBOARD_URL`：
 
 ```js
-const HOTBOARD_URL = 'http://localhost:5173'          // 开发（需先 npm run dev）
+const HOTBOARD_URL = 'http://localhost:5174'          // 本地（需先 npm run preview）
 // const HOTBOARD_URL = 'https://mini-hot.netlify.app' // 生产（Netlify 部署后）
 ```
+
+本地预览命令（稳定，服务 `dist/` 构建产物，不会被 Capacitor Android 构建干扰）：
+
+```bash
+cd D:\Mini_hot
+npm run build                                            # 构建 dist
+npm run preview -- --port 5174 --strictPort             # 启动 preview 服务
+```
+
+> 注：开发用 `vite preview`（5174，不 watch）而非 `vite dev`（5173）。`dist/` 是被 Capacitor 打包成 Android 版的同一产物，preview 用它最稳定。
 
 ---
 

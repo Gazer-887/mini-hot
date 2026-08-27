@@ -1,5 +1,7 @@
 # Mini_hot 项目进展记录
 
+> NOTEBOOK 目录固定为 4 个文件：`progress.md`（本文件）/ `decisions.md`（关键决策）/ `learnings.md`（经验沉淀）/ `problem.md`（问题记录）。**无 `lat.md`**（`lat.md` 是另一项目 fitness-tracker 的结构，本项目不沿用，避免混淆）。
+
 ## 2026-08-23
 
 ### 项目启动与归档
@@ -142,17 +144,34 @@
 - **实现**：`client.js` 重写为 `inject=['betterSidebar']` + `ctx.betterSidebar.registerTab({id:'hotboard', title:'🔥 热榜', single:true, component})`，Tab 内 iframe 嵌热榜页。
 - **可复用性**：desktop profile 已挂载 dsh-better-sidebar（dump-config 可见），无需额外安装。
 - **状态**：插件已重新安装（v0.2.0），client bundle 已更新。**需硬刷新浏览器**（client 改动热加载，无需重启 DSH）。
-- **顺手修复**：vite.config.ts 的 watch.ignored 改为正则函数 `/(\.tmpdir|[\\/]NOTEBOOK[\\/]|[\\/]PLAN[\\/]|[\\/]docs[\\/]|[\\/]dsh-plugin[\\/])/.test(path)`；已实测：创建/删除 `.tmpdir` 临时目录后 dev server 仍存活（EBUSY 根治，L-011 验证通过）。注意不能用 glob（micromatch dot:false 匹配不到点开头段），且 config 被 tsc 检查不能用 es2015 的 `.includes`。
+- **顺手修复**：vite.config.ts 的 watch.ignored 改为正则函数 `/(\.tmpdir|[\\/]NOTEBOOK[\\/]|[\\/]PLAN[\\/]|[\\/]docs[\\/]|[\\/]dsh-plugin[\\/]|[\\/]android[\\/]|[\\/]dist[\\/]|[\\/]node_modules[\\/]|[\\/]\.vite[\\/]|[\\/]\.git[\\/])/.test(path)`；已实测：创建/删除 `.tmpdir` 临时目录后 dev server 仍存活（EBUSY 根治，L-011 验证通过）。注意不能用 glob（micromatch dot:false 匹配不到点开头段），且 config 被 tsc 检查不能用 es2015 的 `.includes`。
+
+### 2026-08-26 深夜：发现 Capacitor Android 目录 + 改用 vite preview
+- **关键发现**：项目根有 `android/`（Capacitor 工程）+ `capacitor.config.ts`（webDir=dist），是主人的**三态版本**（Web + Android App）。`dist/` 被同步进 `android/app/src/main/assets/public/`。
+- **dev server 反复崩的根因**：Vite dev 在 watch 整个根目录，被 **Capacitor Android 构建**（另终端在写 android/ 下的产物）触发 EBUSY（`android/app/build/.../intermediary-bundle.aab`）。这不是我的代码问题，是 dev server watch 到无关大目录。
+- **改用 vite preview（端口 5174）**：preview 服务 `dist/` 构建产物且**不 watch**，绝不 EBUSY，且与 Android 打包用同一产物 → 最稳。`client.js` 的 `HOTBOARD_URL` 已改为 `http://localhost:5174`，`SKILL.md` 同步。
+- **教训**：热榜服务的本地地址应指向 preview（dist 产物），不要用 dev server（5173 易被外部构建搞崩）。
 
 ### 文件清单
 | 文件 | 说明 |
 |------|------|
 | `~/.dsh/skills/hotboard/SKILL.md` | `/hotboard` 技能（agent 读/操作热榜页） |
 | `D:\Mini_hot\dsh-plugin\lib\index.js` | 插件服务端入口 |
-| `D:\Mini_hot\dsh-plugin\lib\client.js` | 插件客户端 UI（按钮组件） |
+| `D:\Mini_hot\dsh-plugin\lib\client.js` | 插件客户端 UI（better-sidebar Tab 组件） |
 | `D:\Mini_hot\dsh-plugin\cordis.patch.yml` | DSH 注入配置 |
 | `D:\Mini_hot\dsh-plugin\package.json` | 包描述 |
 
 ---
 
-> 最后更新：2026-08-26 17:12
+## 2026-08-27 文档漂移修复
+
+- ✅ 清除 DSH「快捷按钮」→「better-sidebar Tab」的文档漂移（插件早已演进为侧边栏 Tab，但部分文档仍写旧方案）：
+  - `dsh-plugin/lib/index.js` 顶部注释：改为 better-sidebar Tab 描述
+  - `dsh-plugin/dsh.plugin.json` description：按钮 → Tab
+  - `PLAN/plan4_DSH集成方案.md`：第 2 节方案、进度表、风险/依赖三处改为 `ctx.betterSidebar.registerTab`（order=60, single:true）
+  - `NOTEBOOK/progress.md` 文件清单：`client.js` 说明「按钮组件」→「better-sidebar Tab 组件」
+- ℹ️ 关于 `lat.md`：经核查 Mini_hot 项目内文档（README/NOTEBOOK）**无 `lat.md` 引用**，NOTEBOOK 固定为 `progress/decisions/learnings/problem` 4 文件；`lat.md` 是另一项目 fitness-tracker 的结构，已在 progress.md 顶部加澄清，避免再混淆。
+
+---
+
+> 最后更新：2026-08-27 17:51

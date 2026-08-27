@@ -4,9 +4,10 @@
 //
 // 关键：通过 ctx.betterSidebar.registerTab 注册，inject=['betterSidebar']。
 
-// 热榜地址：开发用 localhost，Netlify 部署后改为在线 URL
-// 注意：Netlify 部署后改这里 + ~/.dsh/skills/hotboard/SKILL.md 的地址
-const HOTBOARD_URL = 'http://localhost:5173'
+// 热榜地址：开发用 vite preview（服务 dist 构建产物，稳定不 watch，不会被外部构建搞崩）。
+// Netlify 部署后改为在线 URL。注意：preview 用 5174，dev server 用 5173（易被其他进程干扰）。
+// 启动 preview：cd D:\Mini_hot && npm run preview -- --port 5174 --strictPort
+const HOTBOARD_URL = 'http://localhost:5174'
 
 window.__ModuleLoader__.load({
   id: 'dsh-hotboard',
