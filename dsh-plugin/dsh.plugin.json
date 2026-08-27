@@ -1,7 +1,7 @@
 ---
 name: dsh-hotboard
 version: 0.1.0
-description: DSH 桌面端热榜快捷按钮——在侧边栏底部注册「🔥热榜」按钮，点击后打开 Mini_hot 热榜网页。
+description: DSH better-sidebar 侧边栏 Tab——注册「🔥热榜」Tab，Tab 内 iframe 嵌入 Mini_hot 热榜页面（需 dsh-better-sidebar）。
 id: dsh-hotboard
 main: ./lib/index.js
 ---
