@@ -9,12 +9,13 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <title>迷你今日热榜</title>
     <script>
-      // 避免首屏主题闪白（FOUC）：加载前同步设置 dark class
+      // 避免首屏主题闪白（FOUC）：加载前同步设置 data-theme 与 dark class
       try {
         var t = localStorage.getItem('minihot:theme')
-        if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        }
+        var darkThemes = { dark: 1, midnight: 1 }
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'warm'
+        document.documentElement.setAttribute('data-theme', t)
+        if (darkThemes[t]) document.documentElement.classList.add('dark')
       } catch (e) {}
     </script>
   </head>

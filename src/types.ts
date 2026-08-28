@@ -20,6 +20,7 @@ export interface PlatformMeta {
   unit: string          // 热值单位后缀，如「万」「播放」（用于差异化显示）
   showHeat: boolean     // 是否显示热值（toutiao 为空则显示 --）
   source?: 'uapis' | 'hackernews' // 数据源；默认 uapis
+  note?: string        // 诚实脚注：该平台榜单的真实差异说明（如刷新慢/无热值）
 }
 
 // 单条热榜（归一化后）
