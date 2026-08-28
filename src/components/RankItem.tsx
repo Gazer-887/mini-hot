@@ -8,6 +8,7 @@ interface Props {
   platformKey?: string
   isFav?: boolean
   onToggleFav?: () => void
+  onRead?: () => void
 }
 
 // 单条热榜项：排名 + 标题 + 热值 + 跳转 + 收藏
@@ -19,6 +20,7 @@ export default function RankItem({
   platformKey,
   isFav = false,
   onToggleFav,
+  onRead,
 }: Props) {
   return (
     <div className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-white dark:hover:bg-white/10">
@@ -26,6 +28,7 @@ export default function RankItem({
         href={item.url || '#'}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={onRead}
         className="flex min-w-0 flex-1 items-center gap-3"
       >
         {/* 排名 */}

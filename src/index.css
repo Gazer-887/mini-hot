@@ -13,12 +13,43 @@
 }
 
 .dark {
+  color-scheme: dark;
   --cream: 28 24 18;
   --sand: 42 35 27;
   --gold: 232 183 94;
   --wood: 184 133 70;
   --ink: 240 232 218;
   --softgreen: 143 212 94;
+}
+
+/* ============ 薄荷（浅绿·生机）============ */
+:root[data-theme='mint'] {
+  --cream: 237 247 233;
+  --sand: 224 240 217;
+  --gold: 76 158 63;
+  --wood: 60 120 50;
+  --ink: 44 64 40;
+  --softgreen: 143 212 94;
+}
+
+/* ============ 樱粉（粉调·温柔）============ */
+:root[data-theme='sakura'] {
+  --cream: 252 242 245;
+  --sand: 245 228 234;
+  --gold: 232 138 166;
+  --wood: 190 110 140;
+  --ink: 74 46 56;
+  --softgreen: 200 160 180;
+}
+
+/* ============ 深空（深蓝·静谧，与 .dark 同时生效）============ */
+:root[data-theme='midnight'] {
+  --cream: 22 28 44;
+  --sand: 30 38 58;
+  --gold: 130 170 255;
+  --wood: 100 140 210;
+  --ink: 220 230 250;
+  --softgreen: 120 200 160;
 }
 
 html,
@@ -30,4 +61,10 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* 金句淡入（每次换句用 key 触发重渲染） */
+@keyframes quoteFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
