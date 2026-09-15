@@ -27,7 +27,7 @@ export default function PlatformTabs({ view, onChange }: Props) {
             onClick={() => onChange(t.key)}
             className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
               active
-                ? 'bg-ink text-cream dark:bg-gold dark:text-cream'
+                ? 'bg-accent text-accent-text'
                 : 'bg-white/70 text-ink/70 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10'
             }`}
           >
