@@ -6,8 +6,7 @@ import type { HotItem, PlatformKey, PlatformMeta } from '../types'
 import { PLATFORMS, PLATFORM_MAP } from '../data/platforms'
 import { useReadHistory, identityOf } from '../hooks/useReadHistory'
 import { useFlip } from '../hooks/useFlip'
-import RankItem from './RankItem'
-import HostItem from './HostItem'
+import HotItemCard from './HotItemCard'
 import FavoritesView from './FavoritesView'
 import StateBox from './StateBox'
 import PlatformTabs from './PlatformTabs'
@@ -87,6 +86,7 @@ function AllView({
           items={platforms[p.key].items}
           status={platforms[p.key].status}
           error={platforms[p.key].error}
+          stale={platforms[p.key].stale}
           hidden={read.hidden}
           onRead={(it) => read.hide({ url: identityOf(it), title: it.title, source: p.name, heat: it.heat, time: Date.now() })}
           onToggleFav={onToggleFav}
@@ -104,6 +104,7 @@ function PlatformGroup({
   items,
   status,
   error,
+  stale,
   hidden,
   onRead,
   onToggleFav,
@@ -115,6 +116,7 @@ function PlatformGroup({
   items: HotItem[]
   status: 'idle' | 'loading' | 'success' | 'error'
   error?: string
+  stale?: boolean
   hidden: Set<string>
   onRead: (item: HotItem) => void
   onToggleFav: Props['onToggleFav']
@@ -134,6 +136,9 @@ function PlatformGroup({
       {meta.note && (
         <p className="mb-1 px-1 text-xs text-ink/35 dark:text-ink/40">{meta.note}</p>
       )}
+      {stale && (
+        <p className="mb-1 px-1 text-xs text-gold/70">⚠ 数据来自缓存，可能不是最新</p>
+      )}
 
       {status === 'loading' && <StateBox type="loading" />}
       {status === 'error' && <StateBox type="error" message={error} />}
@@ -145,7 +150,8 @@ function PlatformGroup({
         <div ref={flipRef} className="divide-y divide-ink/5">
           {visible.map((it) => (
             <div key={identityOf(it)} data-flip-key={identityOf(it)}>
-              <HostItem
+              <HotItemCard
+                variant="host"
                 item={it}
                 platformName={meta.name}
                 color={meta.color}
@@ -198,6 +204,9 @@ function SingleView({
       {meta.note && (
         <p className="mb-1 px-1 text-xs text-ink/35 dark:text-ink/40">{meta.note}</p>
       )}
+      {st.stale && (
+        <p className="mb-1 px-1 text-xs text-gold/70">⚠ 数据来自缓存，可能不是最新</p>
+      )}
       {st.status === 'loading' && <StateBox type="loading" />}
       {st.status === 'error' && <StateBox type="error" message={st.error} />}
       {st.status === 'success' && st.items.length === 0 && <StateBox type="empty" />}
@@ -208,7 +217,8 @@ function SingleView({
         <div ref={flipRef} className="divide-y divide-ink/5">
           {visible.map((it) => (
             <div key={identityOf(it)} data-flip-key={identityOf(it)}>
-              <RankItem
+              <HotItemCard
+                variant="rank"
                 item={it}
                 rank={it.rank}
                 color={meta.color}

@@ -11,6 +11,8 @@ export default {
         wood: 'rgb(var(--wood) / <alpha-value>)',
         ink: 'rgb(var(--ink) / <alpha-value>)',
         softgreen: 'rgb(var(--softgreen) / <alpha-value>)',
+        accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-text': 'rgb(var(--accent-text) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],

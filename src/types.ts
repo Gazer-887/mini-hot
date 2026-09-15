@@ -40,6 +40,7 @@ export interface PlatformState {
   items: HotItem[]
   updatedAt: string     // 数据时间（接口 update_time 或本地拉取时间）
   error?: string
+  stale?: boolean       // true=数据来自过期缓存降级（主源失败时兜底）
 }
 
 // 接口原始返回（uapis.cn hotboard）

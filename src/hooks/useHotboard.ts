@@ -31,11 +31,11 @@ export function useHotboard() {
       [key]: { ...prev[key], status: 'loading', error: undefined },
     }))
     try {
-      const { items, updatedAt } = await fetchHot(key, force)
+      const { items, updatedAt, stale } = await fetchHot(key, force)
       if (signal.aborted) return // 已切视图/刷新被中止 → 丢弃
       setPlatforms((prev) => ({
         ...prev,
-        [key]: { key, status: 'success', items, updatedAt },
+        [key]: { key, status: 'success', items, updatedAt, stale },
       }))
     } catch (e) {
       if (signal.aborted) return
