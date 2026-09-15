@@ -1,10 +1,11 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// useReadHistory 依赖 React hooks + localStorage，需要分别测纯逻辑层
-// 策略：测 load/save/todayKey/identityOf 的纯逻辑，不挂 React 组件
+// useReadHistory 依赖 localStorage；CI 环境（Node 20）jsdom 有兼容问题
+// 策略：用 vi.stubGlobal mock localStorage，不依赖 jsdom
 
 const STORAGE_KEY = 'minihot:read-history'
+
+// --- 以下三个函数与源码逻辑一致，用于纯逻辑单元测试 ---
 
 function todayKey(): string {
   const d = new Date()
@@ -26,7 +27,6 @@ interface StorageShape {
   items: ReadRecord[]
 }
 
-// 提取 load 逻辑（与源码一致）用于单元测试
 function loadFromStorage(): ReadRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -39,14 +39,27 @@ function loadFromStorage(): ReadRecord[] {
   }
 }
 
-// 提取 identityOf 逻辑
 function identityOf(item: { url: string; title: string }): string {
   return item.url || item.title
 }
 
+// --- mock localStorage（纯内存实现，不依赖浏览器 / jsdom）---
+
+function createMockStorage(): Storage {
+  const map = new Map<string, string>()
+  return {
+    get length() { return map.size },
+    clear() { map.clear() },
+    getItem(k: string) { return map.get(k) ?? null },
+    setItem(k: string, v: string) { map.set(k, v) },
+    removeItem(k: string) { map.delete(k) },
+    key(i: number) { return [...map.keys()][i] ?? null },
+  }
+}
+
 describe('useReadHistory 纯逻辑层', () => {
   beforeEach(() => {
-    localStorage.clear()
+    vi.stubGlobal('localStorage', createMockStorage())
   })
 
   describe('todayKey', () => {
@@ -121,7 +134,6 @@ describe('useReadHistory 纯逻辑层', () => {
       ]
       const urlSet = new Set(records.map((r) => r.url))
       expect(urlSet.has('https://weibo.com/1')).toBe(true)
-      // 模拟 hide 时的去重检查
       const newRec: ReadRecord = { url: 'https://weibo.com/1', title: 'A', source: '微博', time: 2 }
       const shouldSkip = records.some((r) => r.url === newRec.url)
       expect(shouldSkip).toBe(true)
