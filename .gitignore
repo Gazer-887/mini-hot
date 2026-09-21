@@ -24,6 +24,11 @@ Thumbs.db
 .vscode/
 .idea/
 
+# 项目内部资料（笔记 / 计划 / 平台数据，不入 git）
+NOTEBOOK/
+PLAN/
+.workbuddy/
+
 # Capacitor 安卓原生工程（源码应提交，以下为本地构建产物/密钥）
 android/.gradle/
 android/app/build/
