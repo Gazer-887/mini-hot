@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Mini_hot 迷你今日热榜 - 聚合微博/知乎/B站/抖音/小红书/头条热榜",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
